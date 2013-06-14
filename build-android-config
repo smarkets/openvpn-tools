@@ -1,0 +1,57 @@
+#!/usr/bin/env ruby
+require 'config.rb'
+require 'fileutils'
+
+
+if not ARGV[0]
+  raise "Provide an argument"
+end
+
+files = ["#{ARGV[0]}.key", "#{ARGV[0]}.crt", "ca.crt", "ta.key"]
+
+files.each do |file|
+  if not File.exists?("#{CA_DIR}/#{file}")
+    raise "File #{file} does not exist"
+  end
+end
+
+ca = File.read("#{CA_DIR}/ca.crt")
+ta = File.read("#{CA_DIR}/ta.key")
+cert = File.read("#{CA_DIR}/#{ARGV[0]}.crt")
+key = File.read("#{CA_DIR}/#{ARGV[0]}.key")
+
+config = %{
+client
+dev tun
+proto udp
+remote #{HOST} 1194
+resolv-retry infinite
+nobind
+persist-key
+persist-tun
+ns-cert-type server
+key-direction 1
+cipher AES-256-CBC
+comp-lzo
+verb 3
+ping 10
+ping-restart 60
+explicit-exit-notify 2
+<ca>
+#{ca}
+</ca>
+<cert>
+#{cert}
+</cert>
+<key>
+#{key}
+</key>
+<tls-auth>
+#{ta}
+</tls-auth>
+}
+
+File.open("#{ARGV[0]}.ovpn", 'w') do |f|
+  f.write(config)
+end
+

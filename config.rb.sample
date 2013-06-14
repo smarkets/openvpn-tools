@@ -1,0 +1,2 @@
+CA_DIR = '/etc/openvpn/easy-rsa/keys/' # Location of CA
+HOST = '<hostname>' # Hostname to connect to
